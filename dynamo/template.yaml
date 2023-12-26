@@ -1,0 +1,7 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Resources:
+  Fn::Transform:
+    Name: AWS::Include
+    Parameters:
+      Location: properties.json

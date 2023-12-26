@@ -1,0 +1,56 @@
+{
+	"MyTable": {
+		"Type": "AWS::DynamoDB::Table",
+		"Properties": {
+			"TableName": "face-extractor-ojt-dynamodb",
+			"AttributeDefinitions": [
+				{
+					"AttributeName": "FaceID",
+					"AttributeType": "S"
+				},
+				{
+					"AttributeName": "Name",
+					"AttributeType": "S"
+				},
+				{
+					"AttributeName": "BucketLocation",
+					"AttributeType": "S"
+				}
+			],
+			"KeySchema": [
+				{
+					"AttributeName": "FaceID",
+					"KeyType": "HASH"
+				},
+				{
+					"AttributeName": "Name",
+					"KeyType": "RANGE"
+				}
+			],
+			"ProvisionedThroughput": {
+				"ReadCapacityUnits": 5,
+				"WriteCapacityUnits": 5
+			},
+			"GlobalSecondaryIndexes": [
+				{
+					"IndexName": "myGSI",
+					"KeySchema": [{
+						"AttributeName": "BucketLocation",
+						"KeyType": "HASH"
+					}],
+					"Projection": {
+						"NonKeyAttributes": [
+							"FaceID",
+							"Name"
+						],
+						"ProjectionType": "INCLUDE"
+					},
+					"ProvisionedThroughput": {
+						"ReadCapacityUnits": 5,
+						"WriteCapacityUnits": 5
+					}
+				}
+			]
+		}
+	}
+}

@@ -1,0 +1,11 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Parameters:
+  CollectionID:
+    Type: String
+
+Resources:
+  RekognitionCollection:
+    Type: AWS::Rekognition::Collection
+    Properties:
+      CollectionId: !Ref CollectionID

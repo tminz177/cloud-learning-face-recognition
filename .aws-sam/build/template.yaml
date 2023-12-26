@@ -1,0 +1,85 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Root stack for managing face-extrator resources
+Parameters:
+  CollectionId:
+    Type: String
+    Default: face-extractor-ojt-collection
+  S3BucketName:
+    Type: String
+    Default: face-extractor-ojt-s3bucket
+  APIName:
+    Type: String
+    Default: face-extractor-ojt-api
+  RuleID:
+    Type: String
+    Default: SearchRule
+  SearchPrefix:
+    Type: String
+    Default: search-image
+  TableName:
+    Type: String
+    Default: face-extractor-ojt-dynamodb
+Resources:
+  S3:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: S3\template.yaml
+      Parameters:
+        BucketName:
+          Ref: S3BucketName
+        RuleID:
+          Ref: RuleID
+        SearchPrefix:
+          Ref: SearchPrefix
+    Metadata:
+      SamResourceId: S3
+  Rekognition:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: Rekognition\template.yaml
+      Parameters:
+        CollectionID:
+          Ref: CollectionId
+    Metadata:
+      SamResourceId: Rekognition
+  Lambda:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: Lambda\template.yaml
+      Parameters:
+        CollectionID:
+          Ref: CollectionId
+        S3ImageBucket:
+          Ref: S3BucketName
+        TableName:
+          Ref: TableName
+    Metadata:
+      SamResourceId: Lambda
+  ApiGateway:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: ApiGateway\template.yaml
+      Parameters:
+        ApiName:
+          Ref: APIName
+        ExtractFaceInImagesArn:
+          Fn::GetAtt:
+          - Lambda
+          - Outputs.ExtractFaceInImagesArn
+        SearchFaceByImagesArn:
+          Fn::GetAtt:
+          - Lambda
+          - Outputs.SearchFaceByImagesArn
+        ImportToDBArn:
+          Fn::GetAtt:
+          - Lambda
+          - Outputs.ImportToDBArn
+    Metadata:
+      SamResourceId: ApiGateway
+  DynamoDB:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: DynamoDB\template.yaml
+    Metadata:
+      SamResourceId: DynamoDB

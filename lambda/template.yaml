@@ -1,0 +1,73 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  face-extractor-ojt
+
+  Sample SAM Template for face-extractor-ojt
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 3
+    MemorySize: 128
+
+Parameters:
+  S3ImageBucket:
+    Type: String
+  CollectionID:
+    Type: String
+  TableName:
+    Type: String
+
+Resources:
+  ExtractFaceInImages:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: extract_face_in_images/
+      Environment:
+        Variables:
+          COLLECTION_ID: !Ref CollectionID
+          IMG_BUCKET_NAME: !Ref S3ImageBucket
+      Handler: app.lambda_handler
+      MemorySize: 500
+      Role: arn:aws:iam::812723145208:role/iam-cloud-ojt-lambda-role
+      Runtime: python3.9
+      Timeout: 300
+      Tracing: Active
+
+  SearchFaceByImages:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: search_face_in_images/
+      Environment:
+        Variables:
+          COLLECTION_ID: !Ref CollectionID
+          TableName: !Ref TableName
+      Handler: app.lambda_handler
+      MemorySize: 500
+      Role: arn:aws:iam::812723145208:role/iam-cloud-ojt-lambda-role
+      Runtime: python3.9
+      Timeout: 300
+      Tracing: Active
+
+  ImportToDB:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: import_to_db/
+      Environment:
+        Variables:
+          TableName: !Ref TableName
+      Handler: app.lambda_handler
+      MemorySize: 500
+      Role: arn:aws:iam::812723145208:role/iam-cloud-ojt-lambda-role
+      Runtime: python3.9
+      Timeout: 300
+      Tracing: Active
+
+Outputs:
+  ExtractFaceInImagesArn:
+    Value: !GetAtt ExtractFaceInImages.Arn
+  SearchFaceByImagesArn:
+    Value: !GetAtt SearchFaceByImages.Arn
+  ImportToDBArn:
+    Value: !GetAtt ImportToDB.Arn

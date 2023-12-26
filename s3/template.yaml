@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: "2010-09-09"
+
+Parameters:
+  BucketName:
+    Type: String
+  RuleID:
+    Type: String
+  SearchPrefix:
+    Type: String
+
+Resources:
+  S3Bucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Ref BucketName
+      LifecycleConfiguration:
+        Rules:
+          - Id: !Ref RuleID
+            Prefix: !Ref SearchPrefix
+            Status: Enabled
+            ExpirationInDays: 1

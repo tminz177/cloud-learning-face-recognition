@@ -1,0 +1,60 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Root stack for managing face-extrator resources
+
+Parameters:
+  CollectionId:
+    Type: String
+    Default: 'face-extractor-ojt-collection'
+  S3BucketName:
+    Type: String
+    Default: 'face-extractor-ojt-s3bucket'
+  APIName:
+    Type: String
+    Default: 'face-extractor-ojt-api'
+  RuleID:
+    Type: String
+    Default: 'SearchRule'
+  SearchPrefix:
+    Type: String
+    Default: 'search-image'
+  TableName:
+    Type: String
+    Default: 'face-extractor-ojt-dynamodb'
+
+Resources:
+  S3:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: 's3/template.yaml'
+      Parameters:
+        BucketName: !Ref S3BucketName
+        RuleID: !Ref RuleID
+        SearchPrefix: !Ref SearchPrefix
+  Rekognition:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: 'rekognition/template.yaml'
+      Parameters:
+        CollectionID: !Ref CollectionId
+  Lambda:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: 'lambda/template.yaml'
+      Parameters:
+        CollectionID: !Ref CollectionId
+        S3ImageBucket: !Ref S3BucketName
+        TableName: !Ref TableName
+  ApiGateway:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: 'apigateway/template.yaml'
+      Parameters:
+        ApiName: !Ref APIName
+        ExtractFaceInImagesArn: !GetAtt Lambda.Outputs.ExtractFaceInImagesArn
+        SearchFaceByImagesArn: !GetAtt Lambda.Outputs.SearchFaceByImagesArn
+        ImportToDBArn: !GetAtt Lambda.Outputs.ImportToDBArn
+  DynamoDB:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: dynamo/template.yaml
